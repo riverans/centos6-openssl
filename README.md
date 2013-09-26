@@ -7,7 +7,7 @@ Spec file for backport of OpenSSL 1.0.1 for CentOS 6
 Simple Methods
 ==============
 
-Someone other than me (ptudor) has added the FC srpm to the repo. It may make things simpler. Anyone can update this README and I (ptudor) will approve changes; the webpage at ptudor.net is my own free speech and is purely content owned and created by me. This repo should be considered an international collaboration for academic purposes.
+Someone other than me (ptudor) has added the FC srpm to the repo. It may make things simpler. Anyone can update this README and I (ptudor) will approve changes; the webpage at ptudor.net is my own free speech and is purely content owned and created by me. 
 
 
 Quick Summary:
