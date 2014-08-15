@@ -1,7 +1,7 @@
 centos6-openssl
 ===============
 
-Spec file for backport of OpenSSL 1.0.1 for CentOS 6
+Spec file for backport of OpenSSL 1.0.1i for CentOS 6
 
 
 Simple Methods
@@ -12,20 +12,23 @@ Someone other than me (ptudor) has added the FC srpm to the repo. It may make th
 
 Quick Summary:
 ==============
-Assuming you've built an RPM before, download the Fedora Core 20 source rpm for openssl-1.0.1e.
+Assuming you have built an RPM before, download the Fedora Core 21 source rpm for openssl-1.0.1i.
 
 ````
-rpm -Uvh http://dl.fedoraproject.org/pub/fedora/linux/development/20/source/SRPMS/o/openssl-1.0.1e-19.fc20.src.rpm
+wget http://dl.fedoraproject.org/pub/fedora/linux/development/21/source/SRPMS/o/openssl-1.0.1i-2.fc21.src.rpm
+rpm -ivh openssl-1.0.1i-2.fc21.src.rpm --nomd5
 cd /usr/src/redhat/SOURCES/
 ````
 
-Revert the new syntax to the old syntax with the double-underscore prefix.
+
+TODO: My patch will apply all the needed corrections
 
 ````
 sed -i -e "s/secure_getenv/__secure_getenv/g" openssl-1.0.1e-env-zlib.patch
 sed -i -e "s/secure_getenv/__secure_getenv/g" openssl-1.0.1e-fips-ctor.patch
 ````
 
+TODO: The site will need to change the diff file with my new diff file
 Fetch this updated diff for the spec file, review it, and apply the patch.
 
 ````
