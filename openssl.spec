@@ -23,7 +23,7 @@
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 1.0.1i
-Release: 2%{?dist}
+Release: 3%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -112,7 +112,8 @@ protocols.
 Summary: A general purpose cryptography library with TLS implementation
 Group: System Environment/Libraries
 Requires: ca-certificates >= 2008-5
-Requires: crypto-policies
+# This package does not exist on CentOS 6. Maybe on CentOS7.
+#Requires: crypto-policies
 # Needed obsoletes due to the base/lib subpackage split
 Obsoletes: openssl < 1:1.0.1-0.3.beta3
 Obsoletes: openssl-fips < 1:1.0.1e-28
@@ -263,17 +264,22 @@ sslarch=linux-ppc64
 %ifarch ppc64le
 sslarch="linux-ppc64le"
 %endif
+## ISSUE 5 on github
+%ifarch x86_64 amd64
+extra_flag="enable-ec_nistp_64_gcc_128"
+%else
+extra_flag=""
+%endif
 
 # ia64, x86_64, ppc are OK by default
 # Configure the build tree.  Override OpenSSL defaults with known-good defaults
 # usable on all platforms.  The Configure script already knows to use -fPIC and
 # RPM_OPT_FLAGS, so we can skip specifiying them here.
-# Note: enabling ec2m WILL require you already have openssl-fips in your system
 ./Configure \
 	--prefix=%{_prefix} --openssldir=%{_sysconfdir}/pki/tls ${sslflags} \
 	--system-ciphers-file=%{_sysconfdir}/crypto-policies/back-ends/openssl.config \
 	zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 \
-	enable-cms enable-md2 no-mdc2 no-rc5 no-ec2m enable-ec enable-ecdh enable-ecdsa enable-srp \
+ 	enable-cms enable-md2 no-mdc2 no-rc5 no-ec2m enable-ec enable-ecdh enable-ecdsa enable-srp ${extra_flag} \
 	--with-krb5-flavor=MIT --enginesdir=%{_libdir}/openssl/engines \
 	--with-krb5-dir=/usr shared  ${sslarch} %{?!nofips:fips}
 
