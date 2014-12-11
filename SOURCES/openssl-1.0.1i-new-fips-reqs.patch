@@ -125,6 +125,42 @@ diff -up openssl-1.0.1i/crypto/dsa/dsa_key.c.fips-reqs openssl-1.0.1i/crypto/dsa
  		{
  		DSAerr(DSA_F_DSA_BUILTIN_KEYGEN, DSA_R_KEY_SIZE_TOO_SMALL);
  		goto err;
+diff -up openssl-1.0.1i/crypto/fips/fips.c.fips-reqs openssl-1.0.1e/crypto/fips/fips.c
+--- openssl-1.0.1i/crypto/fips/fips.c.fips-reqs	2014-09-24 16:38:43.000000000 +0200
++++ openssl-1.0.1i/crypto/fips/fips.c	2014-09-24 16:37:28.000000000 +0200
+@@ -427,27 +427,25 @@ int FIPS_module_mode_set(int onoff, cons
+ 	    ret = 0;
+ 	    goto end;
+ 	    }
+-	OPENSSL_ia32cap_P[0] |= (1<<28);	/* set "shared cache"	*/
+-	OPENSSL_ia32cap_P[1] &= ~(1<<(60-32));	/* clear AVX		*/
+ 	}
+ #endif
+ 
+-	if(!verify_checksums())
++	if(!FIPS_selftest())
+ 	    {
+-	    FIPSerr(FIPS_F_FIPS_MODULE_MODE_SET,FIPS_R_FINGERPRINT_DOES_NOT_MATCH);
+ 	    fips_selftest_fail = 1;
+ 	    ret = 0;
+ 	    goto end;
+ 	    }
+ 
+-	if(FIPS_selftest())
+-	    fips_set_mode(onoff);
+-	else
++	if(!verify_checksums())
+ 	    {
++	    FIPSerr(FIPS_F_FIPS_MODULE_MODE_SET,FIPS_R_FINGERPRINT_DOES_NOT_MATCH);
+ 	    fips_selftest_fail = 1;
+ 	    ret = 0;
+ 	    goto end;
+ 	    }
++
++	fips_set_mode(onoff);
+ 	ret = 1;
+ 	goto end;
+ 	}
 diff -up openssl-1.0.1i/crypto/fips/fips_dh_selftest.c.fips-reqs openssl-1.0.1i/crypto/fips/fips_dh_selftest.c
 --- openssl-1.0.1i/crypto/fips/fips_dh_selftest.c.fips-reqs	2014-08-13 19:58:06.819832600 +0200
 +++ openssl-1.0.1i/crypto/fips/fips_dh_selftest.c	2014-08-13 19:58:06.819832600 +0200
@@ -1084,7 +1120,7 @@ diff -up openssl-1.0.1i/crypto/rsa/rsa_gen.c.fips-reqs openssl-1.0.1i/crypto/rsa
   * All rights reserved.
   *
   * This package is an SSL implementation written
-@@ -165,6 +166,222 @@ int RSA_generate_key_ex(RSA *rsa, int bi
+@@ -165,6 +166,236 @@ int RSA_generate_key_ex(RSA *rsa, int bi
  	return rsa_builtin_keygen(rsa, bits, e_value, cb);
  	}
  
@@ -1154,6 +1190,7 @@ diff -up openssl-1.0.1i/crypto/rsa/rsa_gen.c.fips-reqs openssl-1.0.1i/crypto/rsa
 +	if (!BN_is_zero(rsa->p) && !BN_is_zero(rsa->q))
 +		test = 1;
 +
++retry:
 +	/* generate p and q */
 +	for (i = 0; i < 5 * pbits; i++)
 +		{
@@ -1246,7 +1283,18 @@ diff -up openssl-1.0.1i/crypto/rsa/rsa_gen.c.fips-reqs openssl-1.0.1i/crypto/rsa
 +	/* calculate d */
 +	if (!BN_sub(r1,rsa->p,BN_value_one())) goto err;	/* p-1 */
 +	if (!BN_sub(r2,rsa->q,BN_value_one())) goto err;	/* q-1 */
-+	if (!BN_mul(r0,r1,r2,ctx)) goto err;	/* (p-1)(q-1) */
++	
++	if (!BN_gcd(r0, r1, r2, ctx)) goto err;
++	if (!(rsa->flags & RSA_FLAG_NO_CONSTTIME))
++		{
++		  pr0 = &local_r0;
++		  BN_with_flags(pr0, r0, BN_FLG_CONSTTIME);
++		}
++	else
++	  pr0 = r0;
++	if (!BN_div(r0, NULL, r1, pr0, ctx)) goto err;
++	if (!BN_mul(r0,r0,r2,ctx)) goto err;	/* lcm(p-1, q-1) */
++
 +	if (!(rsa->flags & RSA_FLAG_NO_CONSTTIME))
 +		{
 +		  pr0 = &local_r0;
@@ -1255,6 +1303,8 @@ diff -up openssl-1.0.1i/crypto/rsa/rsa_gen.c.fips-reqs openssl-1.0.1i/crypto/rsa
 +	else
 +	  pr0 = r0;
 +	if (!BN_mod_inverse(rsa->d,rsa->e,pr0,ctx)) goto err;	/* d */
++
++	if (BN_num_bits(rsa->d) < pbits) goto retry; /* d is too small */
 +
 +	/* set up d for correct BN_FLG_CONSTTIME flag */
 +	if (!(rsa->flags & RSA_FLAG_NO_CONSTTIME))
@@ -1307,7 +1357,7 @@ diff -up openssl-1.0.1i/crypto/rsa/rsa_gen.c.fips-reqs openssl-1.0.1i/crypto/rsa
  static int rsa_builtin_keygen(RSA *rsa, int bits, BIGNUM *e_value, BN_GENCB *cb)
  	{
  	BIGNUM *r0=NULL,*r1=NULL,*r2=NULL,*r3=NULL,*tmp;
-@@ -176,17 +393,12 @@ static int rsa_builtin_keygen(RSA *rsa,
+@@ -176,17 +407,12 @@ static int rsa_builtin_keygen(RSA *rsa,
  #ifdef OPENSSL_FIPS
  	if (FIPS_module_mode())
  		{
@@ -1326,7 +1376,7 @@ diff -up openssl-1.0.1i/crypto/rsa/rsa_gen.c.fips-reqs openssl-1.0.1i/crypto/rsa
  		}
  #endif
  
-@@ -301,17 +513,6 @@ static int rsa_builtin_keygen(RSA *rsa,
+@@ -301,17 +527,6 @@ static int rsa_builtin_keygen(RSA *rsa,
  		p = rsa->p;
  	if (!BN_mod_inverse(rsa->iqmp,rsa->q,p,ctx)) goto err;
  

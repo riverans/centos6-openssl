@@ -1,7 +1,7 @@
 centos6-openssl
 ===============
 
-Spec file for backport of OpenSSL 1.0.1i for CentOS 6
+Spec file for backport of OpenSSL 1.0.1j for CentOS 6
 
 
 Simple Methods
@@ -12,30 +12,20 @@ Someone other than me (ptudor) has added the FC srpm to the repo. It may make th
 
 Quick Summary:
 ==============
-Assuming you have built an RPM before, download the Fedora Core 21 source rpm for openssl-1.0.1i.
+Assuming you have built an RPM before and also have git, download this repository
 
 ````
-wget http://dl.fedoraproject.org/pub/fedora/linux/development/21/source/SRPMS/o/openssl-1.0.1i-2.fc21.src.rpm
-rpm -ivh openssl-1.0.1i-2.fc21.src.rpm --nomd5
-cd /usr/src/redhat/SOURCES/
+git clone https://github.com/ptudor/centos6-openssl.git && centos6-openssl
 ````
 
-
-TODO: My patch will apply all the needed corrections
-
-````
-sed -i -e "s/secure_getenv/__secure_getenv/g" openssl-1.0.1e-env-zlib.patch
-sed -i -e "s/secure_getenv/__secure_getenv/g" openssl-1.0.1e-fips-ctor.patch
-````
-
-TODO: The site will need to change the diff file with my new diff file
-Fetch this updated diff for the spec file, review it, and apply the patch.
+Download the openssl-1.0.1j from OpenSSL site and also copy all the SOURCES from this git to 
+the rpmbuild's SOURCES dir and the spec file to SPECS dir (this is optional) and build it.
 
 ````
-cd /usr/src/redhat/SPECS/
-wget http://www.ptudor.net/linux/openssl/resources/openssl-spec-patricktudor-fc20-19.diff
-patch -p1 < openssl-spec-patricktudor-fc20-19.diff
-time rpmbuild -ba openssl.spec
+cp SOURCES/* /usr/src/redhat/SOURCES
+cp openssl.spec /usr/src/redhat/SPECS
+wget -O /usr/src/redhat/SOURCES/openssl-1.0.1j.tar.gz https://www.openssl.org/source/openssl-1.0.1j.tar.gz
+cd /usr/src/redhat/SPECS && rpmbuild -ba openssl.spec
 ````
 
 See also: 
@@ -45,4 +35,3 @@ https://www.ptudor.net/linux/openssl/
 http://unix.stackexchange.com/questions/84283/how-can-i-get-tlsv1-2-support-in-apache-on-rhel6-centos-sl6/86326
 
 http://www.centos.org/modules/newbb/viewtopic.php?topic_id=41784&forum=55&post_id=189679
-
