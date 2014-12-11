@@ -22,8 +22,8 @@
 
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.0.1i
-Release: 3%{?dist}
+Version: 1.0.1j
+Release: 2%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -59,7 +59,7 @@ Patch33: openssl-1.0.0-beta4-ca-dir.patch
 Patch34: openssl-0.9.6-x509.patch
 Patch35: openssl-0.9.8j-version-add-engines.patch
 Patch39: openssl-1.0.1h-ipv6-apps.patch
-Patch40: openssl-1.0.1g-fips.patch
+Patch40: openssl-1.0.1j-fips.patch
 Patch45: openssl-1.0.1e-env-zlib.patch
 Patch47: openssl-1.0.0-beta5-readme-warning.patch
 Patch49: openssl-1.0.1i-algo-doc.patch
@@ -73,7 +73,7 @@ Patch65: openssl-1.0.0e-chil-fixes.patch
 Patch66: openssl-1.0.1-pkgconfig-krb5.patch
 Patch68: openssl-1.0.1e-secure-getenv.patch
 Patch69: openssl-1.0.1c-dh-1024.patch
-Patch70: openssl-1.0.1e-fips-ec.patch
+Patch70: openssl-1.0.1j-fips-ec.patch
 Patch71: openssl-1.0.1i-manfix.patch
 Patch72: openssl-1.0.1e-fips-ctor.patch
 Patch73: openssl-1.0.1e-ecc-suiteb.patch
@@ -85,12 +85,11 @@ Patch90: openssl-1.0.1e-enc-fail.patch
 Patch92: openssl-1.0.1h-system-cipherlist.patch
 Patch93: openssl-1.0.1h-disable-sslv2v3.patch
 # Backported fixes including security fixes
+Patch80: openssl-1.0.1j-evp-wrap.patch
 Patch81: openssl-1.0.1-beta2-padlock64.patch
 Patch84: openssl-1.0.1i-trusted-first.patch
 Patch85: openssl-1.0.1e-arm-use-elf-auxv-caps.patch
-Patch89: openssl-1.0.1e-ephemeral-key-size.patch
-# Fix for EL < 7.
-# The release 300 is to avoid conflicting with future patches.
+Patch89: openssl-1.0.1j-ephemeral-key-size.patch
 Patch300: openssl-1.0.1i-fix_secure_gentenv.patch
 
 License: OpenSSL
@@ -112,7 +111,6 @@ protocols.
 Summary: A general purpose cryptography library with TLS implementation
 Group: System Environment/Libraries
 Requires: ca-certificates >= 2008-5
-# This package does not exist on CentOS 6. Maybe on CentOS7.
 #Requires: crypto-policies
 # Needed obsoletes due to the base/lib subpackage split
 Obsoletes: openssl < 1:1.0.1-0.3.beta3
@@ -210,6 +208,7 @@ cp %{SOURCE12} %{SOURCE13} crypto/ec/
 %patch92 -p1 -b .system
 %patch93 -p1 -b .v2v3
 
+%patch80 -p1 -b .wrap
 %patch81 -p1 -b .padlock64
 %patch84 -p1 -b .trusted-first
 %patch85 -p1 -b .armcap
@@ -264,7 +263,6 @@ sslarch=linux-ppc64
 %ifarch ppc64le
 sslarch="linux-ppc64le"
 %endif
-## ISSUE 5 on github
 %ifarch x86_64 amd64
 extra_flag="enable-ec_nistp_64_gcc_128"
 %else
@@ -279,7 +277,7 @@ extra_flag=""
 	--prefix=%{_prefix} --openssldir=%{_sysconfdir}/pki/tls ${sslflags} \
 	--system-ciphers-file=%{_sysconfdir}/crypto-policies/back-ends/openssl.config \
 	zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 \
- 	enable-cms enable-md2 no-mdc2 no-rc5 no-ec2m enable-ec enable-ecdh enable-ecdsa enable-srp ${extra_flag} \
+	enable-cms enable-md2 no-mdc2 no-rc5 no-ec2m enable-ec enable-ecdh enable-ecdsa enable-srp ${extra_flag} \
 	--with-krb5-flavor=MIT --enginesdir=%{_libdir}/openssl/engines \
 	--with-krb5-dir=/usr shared  ${sslarch} %{?!nofips:fips}
 
@@ -488,6 +486,21 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun libs -p /sbin/ldconfig
 
 %changelog
+* Tue Oct 21 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1j-2
+- update the FIPS RSA keygen to be FIPS 186-4 compliant
+
+* Thu Oct 16 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1j-1
+- new upstream release fixing multiple security issues
+
+* Fri Oct 10 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1i-5
+- copy negotiated digests when switching certs by SNI (#1150032)
+
+* Mon Sep  8 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1i-4
+- add support for RFC 5649
+
+* Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:1.0.1i-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
 * Wed Aug 13 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1i-2
 - drop RSA X9.31 from RSA FIPS selftests
 - add Power 8 optimalizations
