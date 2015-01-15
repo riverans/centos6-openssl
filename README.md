@@ -12,10 +12,20 @@ Someone other than me (ptudor) has added the FC srpm to the repo. It may make th
 
 Quick Summary:
 ==============
-Assuming you have built an RPM before and also have git, download this repository
+You will need the following tools to build openssl
+````
+yum -y groupinstall "Development tools" 
+yum -y install rpm-build zlib-devel krb5-devel
+````
+
+On a fresh install only root has access to /usr/srv/redhat
+````
+sudo mkdir /usr/src/redhat
+sudo chown yourusername:yourusername /usr/src/redhat
+mkdir -p /usr/src/redhat/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
 
 ````
-git clone https://github.com/ptudor/centos6-openssl.git && centos6-openssl
+git clone https://github.com/ptudor/centos6-openssl.git && cd centos6-openssl
 ````
 
 Download the openssl-1.0.1j from OpenSSL site and also copy all the SOURCES from this git to 
@@ -26,6 +36,12 @@ cp SOURCES/* /usr/src/redhat/SOURCES
 cp openssl.spec /usr/src/redhat/SPECS
 wget -O /usr/src/redhat/SOURCES/openssl-1.0.1j.tar.gz https://www.openssl.org/source/openssl-1.0.1j.tar.gz
 cd /usr/src/redhat/SPECS && rpmbuild -ba openssl.spec
+````
+
+Now that rpmbuild has completed, we have some files to install.
+````
+cd /usr/src/redhat/RPMS/x86_64/
+rpm -Fvh openssl-1.0.1j-*.rpm openssl-libs-1.0.1j-*.rpm openssl-devel-1.0.1j-*.rpm
 ````
 
 See also: 
