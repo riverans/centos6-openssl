@@ -3,7 +3,6 @@ centos6-openssl
 
 Spec file for backport of OpenSSL 1.0.1j for CentOS 6
 
-
 Simple Methods
 ==============
 
@@ -43,6 +42,10 @@ Now that rpmbuild has completed, we have some files to install.
 cd /usr/src/redhat/RPMS/x86_64/
 rpm -Fvh openssl-1.0.1j-*.rpm openssl-libs-1.0.1j-*.rpm openssl-devel-1.0.1j-*.rpm
 ````
+
+Additional Information:
+Confirm that it will work on both CentOS 6.5 and 6.6 -richbria
+Confirming that this does not work on CentOS 7 - richbria
 
 See also: 
 
