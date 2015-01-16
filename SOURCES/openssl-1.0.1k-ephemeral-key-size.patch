@@ -1,6 +1,6 @@
-diff -up openssl-1.0.1j/apps/s_apps.h.ephemeral openssl-1.0.1j/apps/s_apps.h
---- openssl-1.0.1j/apps/s_apps.h.ephemeral	2014-10-16 13:32:30.772817591 +0200
-+++ openssl-1.0.1j/apps/s_apps.h	2014-10-16 13:32:30.865819691 +0200
+diff -up openssl-1.0.1k/apps/s_apps.h.ephemeral openssl-1.0.1k/apps/s_apps.h
+--- openssl-1.0.1k/apps/s_apps.h.ephemeral	2015-01-09 10:22:03.289896211 +0100
++++ openssl-1.0.1k/apps/s_apps.h	2015-01-09 10:22:03.373898111 +0100
 @@ -156,6 +156,7 @@ int MS_CALLBACK verify_callback(int ok,
  int set_cert_stuff(SSL_CTX *ctx, char *cert_file, char *key_file);
  int set_cert_key_stuff(SSL_CTX *ctx, X509 *cert, EVP_PKEY *key);
@@ -9,9 +9,9 @@ diff -up openssl-1.0.1j/apps/s_apps.h.ephemeral openssl-1.0.1j/apps/s_apps.h
  int init_client(int *sock, char *server, char *port, int type);
  int should_retry(int i);
  int extract_host_port(char *str,char **host_ptr,char **port_ptr);
-diff -up openssl-1.0.1j/apps/s_cb.c.ephemeral openssl-1.0.1j/apps/s_cb.c
---- openssl-1.0.1j/apps/s_cb.c.ephemeral	2014-10-15 14:53:39.000000000 +0200
-+++ openssl-1.0.1j/apps/s_cb.c	2014-10-16 13:32:30.865819691 +0200
+diff -up openssl-1.0.1k/apps/s_cb.c.ephemeral openssl-1.0.1k/apps/s_cb.c
+--- openssl-1.0.1k/apps/s_cb.c.ephemeral	2015-01-08 15:00:36.000000000 +0100
++++ openssl-1.0.1k/apps/s_cb.c	2015-01-09 10:22:03.373898111 +0100
 @@ -338,6 +338,38 @@ void MS_CALLBACK apps_ssl_info_callback(
  		}
  	}
@@ -51,10 +51,10 @@ diff -up openssl-1.0.1j/apps/s_cb.c.ephemeral openssl-1.0.1j/apps/s_cb.c
  
  void MS_CALLBACK msg_cb(int write_p, int version, int content_type, const void *buf, size_t len, SSL *ssl, void *arg)
  	{
-diff -up openssl-1.0.1j/apps/s_client.c.ephemeral openssl-1.0.1j/apps/s_client.c
---- openssl-1.0.1j/apps/s_client.c.ephemeral	2014-10-16 13:32:30.860819578 +0200
-+++ openssl-1.0.1j/apps/s_client.c	2014-10-16 13:32:30.865819691 +0200
-@@ -2044,6 +2044,8 @@ static void print_stuff(BIO *bio, SSL *s
+diff -up openssl-1.0.1k/apps/s_client.c.ephemeral openssl-1.0.1k/apps/s_client.c
+--- openssl-1.0.1k/apps/s_client.c.ephemeral	2015-01-09 10:22:03.367897975 +0100
++++ openssl-1.0.1k/apps/s_client.c	2015-01-09 10:22:03.373898111 +0100
+@@ -2058,6 +2058,8 @@ static void print_stuff(BIO *bio, SSL *s
  			BIO_write(bio,"\n",1);
  			}
  
@@ -63,18 +63,18 @@ diff -up openssl-1.0.1j/apps/s_client.c.ephemeral openssl-1.0.1j/apps/s_client.c
  		BIO_printf(bio,"---\nSSL handshake has read %ld bytes and written %ld bytes\n",
  			BIO_number_read(SSL_get_rbio(s)),
  			BIO_number_written(SSL_get_wbio(s)));
-diff -up openssl-1.0.1j/ssl/ssl.h.ephemeral openssl-1.0.1j/ssl/ssl.h
---- openssl-1.0.1j/ssl/ssl.h.ephemeral	2014-10-16 13:32:30.851819375 +0200
-+++ openssl-1.0.1j/ssl/ssl.h	2014-10-16 13:33:23.233001903 +0200
-@@ -1585,6 +1585,7 @@ DECLARE_PEM_rw(SSL_SESSION, SSL_SESSION)
+diff -up openssl-1.0.1k/ssl/ssl.h.ephemeral openssl-1.0.1k/ssl/ssl.h
+--- openssl-1.0.1k/ssl/ssl.h.ephemeral	2015-01-09 10:22:03.358897772 +0100
++++ openssl-1.0.1k/ssl/ssl.h	2015-01-09 10:25:08.644088146 +0100
+@@ -1593,6 +1593,7 @@ DECLARE_PEM_rw(SSL_SESSION, SSL_SESSION)
  #define SSL_CTRL_GET_EXTRA_CHAIN_CERTS		82
  #define SSL_CTRL_CLEAR_EXTRA_CHAIN_CERTS	83
  
 +#define SSL_CTRL_GET_SERVER_TMP_KEY		109
  #define SSL_CTRL_CHECK_PROTO_VERSION		119
- 
- #define DTLSv1_get_timeout(ssl, arg) \
-@@ -1628,6 +1629,9 @@ DECLARE_PEM_rw(SSL_SESSION, SSL_SESSION)
+ #define DTLS_CTRL_SET_LINK_MTU			120
+ #define DTLS_CTRL_GET_LINK_MIN_MTU		121
+@@ -1638,6 +1639,9 @@ DECLARE_PEM_rw(SSL_SESSION, SSL_SESSION)
  #define SSL_CTX_clear_extra_chain_certs(ctx) \
  	SSL_CTX_ctrl(ctx,SSL_CTRL_CLEAR_EXTRA_CHAIN_CERTS,0,NULL)
  
@@ -84,9 +84,9 @@ diff -up openssl-1.0.1j/ssl/ssl.h.ephemeral openssl-1.0.1j/ssl/ssl.h
  #ifndef OPENSSL_NO_BIO
  BIO_METHOD *BIO_f_ssl(void);
  BIO *BIO_new_ssl(SSL_CTX *ctx,int client);
-diff -up openssl-1.0.1j/ssl/s3_lib.c.ephemeral openssl-1.0.1j/ssl/s3_lib.c
---- openssl-1.0.1j/ssl/s3_lib.c.ephemeral	2014-10-16 13:32:30.866819713 +0200
-+++ openssl-1.0.1j/ssl/s3_lib.c	2014-10-16 13:34:08.918033262 +0200
+diff -up openssl-1.0.1k/ssl/s3_lib.c.ephemeral openssl-1.0.1k/ssl/s3_lib.c
+--- openssl-1.0.1k/ssl/s3_lib.c.ephemeral	2015-01-08 15:00:56.000000000 +0100
++++ openssl-1.0.1k/ssl/s3_lib.c	2015-01-09 10:22:03.374898133 +0100
 @@ -3356,6 +3356,45 @@ long ssl3_ctrl(SSL *s, int cmd, long lar
  
  #endif /* !OPENSSL_NO_TLSEXT */
