@@ -96,7 +96,10 @@ License: OpenSSL
 Group: System Environment/Libraries
 URL: http://www.openssl.org/
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
-BuildRequires: coreutils, krb5-devel, perl, sed, zlib-devel, /usr/bin/cmp, buildsys-macros
+BuildRequires: coreutils, krb5-devel, perl, sed, zlib-devel, /usr/bin/cmp
+%if 0%{?rhel} == 5
+BuildRequires: buildsys-macros
+%endif
 BuildRequires: /usr/bin/rename
 Requires: coreutils, make
 Requires: %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}
