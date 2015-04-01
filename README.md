@@ -14,7 +14,7 @@ Quick Summary:
 You will need the following tools to build openssl
 ````
 yum -y groupinstall "Development tools" 
-yum -y install rpm-build zlib-devel krb5-devel buildsys-macros
+yum -y install rpm-build zlib-devel krb5-devel
 ````
 On a fresh install only root has access to /usr/srv/redhat so lets fix it
 ````
