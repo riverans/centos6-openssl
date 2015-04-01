@@ -1,6 +1,6 @@
-diff -up openssl-1.0.1e/apps/speed.c.suiteb openssl-1.0.1e/apps/speed.c
---- openssl-1.0.1e/apps/speed.c.suiteb	2013-11-08 18:02:53.815229706 +0100
-+++ openssl-1.0.1e/apps/speed.c	2013-11-08 18:04:47.016724297 +0100
+diff -up openssl-1.0.1k/apps/speed.c.suiteb openssl-1.0.1k/apps/speed.c
+--- openssl-1.0.1k/apps/speed.c.suiteb	2015-01-09 10:03:38.406908388 +0100
++++ openssl-1.0.1k/apps/speed.c	2015-01-09 10:03:38.602912821 +0100
 @@ -966,49 +966,23 @@ int MAIN(int argc, char **argv)
  		else
  #endif
@@ -87,3 +87,44 @@ diff -up openssl-1.0.1e/apps/speed.c.suiteb openssl-1.0.1e/apps/speed.c
  			ecdh_doit[i]=1;
  #endif
  		}
+diff -up openssl-1.0.1k/ssl/t1_lib.c.suiteb openssl-1.0.1k/ssl/t1_lib.c
+--- openssl-1.0.1k/ssl/t1_lib.c.suiteb	2015-01-09 10:03:38.603912844 +0100
++++ openssl-1.0.1k/ssl/t1_lib.c	2015-01-09 10:06:35.470912834 +0100
+@@ -218,29 +218,21 @@ static int pref_list[] =
+ 		NID_sect283k1, /* sect283k1 (9) */
+ 		NID_sect283r1, /* sect283r1 (10) */ 
+ #endif
+-		NID_secp256k1, /* secp256k1 (22) */ 
+ 		NID_X9_62_prime256v1, /* secp256r1 (23) */ 
+ #ifndef OPENSSL_NO_EC2M
+ 		NID_sect239k1, /* sect239k1 (8) */ 
+ 		NID_sect233k1, /* sect233k1 (6) */
+ 		NID_sect233r1, /* sect233r1 (7) */ 
+ #endif
+-		NID_secp224k1, /* secp224k1 (20) */ 
+-		NID_secp224r1, /* secp224r1 (21) */
+ #ifndef OPENSSL_NO_EC2M
+ 		NID_sect193r1, /* sect193r1 (4) */ 
+ 		NID_sect193r2, /* sect193r2 (5) */ 
+ #endif
+-		NID_secp192k1, /* secp192k1 (18) */
+-		NID_X9_62_prime192v1, /* secp192r1 (19) */ 
+ #ifndef OPENSSL_NO_EC2M
+ 		NID_sect163k1, /* sect163k1 (1) */
+ 		NID_sect163r1, /* sect163r1 (2) */
+ 		NID_sect163r2, /* sect163r2 (3) */
+ #endif
+-		NID_secp160k1, /* secp160k1 (15) */
+-		NID_secp160r1, /* secp160r1 (16) */ 
+-		NID_secp160r2, /* secp160r2 (17) */ 
+ 	};
+ 
+ int tls1_ec_curve_id2nid(int curve_id)
+@@ -1820,7 +1812,6 @@ int ssl_prepare_clienthello_tlsext(SSL *
+ 		s->tlsext_ecpointformatlist[1] = TLSEXT_ECPOINTFORMAT_ansiX962_compressed_prime;
+ 		s->tlsext_ecpointformatlist[2] = TLSEXT_ECPOINTFORMAT_ansiX962_compressed_char2;
+ 
+-		/* we support all named elliptic curves in RFC 4492 */
+ 		if (s->tlsext_ellipticcurvelist != NULL) OPENSSL_free(s->tlsext_ellipticcurvelist);
+ 		s->tlsext_ellipticcurvelist_length = sizeof(pref_list)/sizeof(pref_list[0]) * 2;
+ 		if ((s->tlsext_ellipticcurvelist = OPENSSL_malloc(s->tlsext_ellipticcurvelist_length)) == NULL)

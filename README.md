@@ -1,7 +1,7 @@
 centos6-openssl
 ===============
 
-Spec file for backport of OpenSSL 1.0.1j for CentOS 6
+Spec file for backport of OpenSSL 1.0.1k for CentOS 6
 
 Simple Methods
 ==============
@@ -31,9 +31,9 @@ Copy all the SOURCES from this git to the rpmbuild's SOURCES dir and the spec fi
 cp SOURCES/* /usr/src/redhat/SOURCES
 cp openssl.spec /usr/src/redhat/SPECS
 ````
-Download openssl-1.0.1j from OpenSSL site
+Download openssl-1.0.1k from OpenSSL site
 ````
-wget -O /usr/src/redhat/SOURCES/openssl-1.0.1j.tar.gz https://www.openssl.org/source/openssl-1.0.1j.tar.gz
+wget -O /usr/src/redhat/SOURCES/openssl-1.0.1k.tar.gz https://www.openssl.org/source/openssl-1.0.1k.tar.gz
 ````
 Build your RPM
 ````
@@ -42,14 +42,14 @@ cd /usr/src/redhat/SPECS && rpmbuild -ba openssl.spec
 Now that rpmbuild has completed, we have some files to install.
 ````
 cd /usr/src/redhat/RPMS/x86_64/
-rpm -Fvh openssl-1.0.1j-*.rpm openssl-libs-1.0.1j-*.rpm openssl-devel-1.0.1j-*.rpm
+rpm -Fvh openssl-1.0.1k-*.rpm openssl-libs-1.0.1k-*.rpm openssl-devel-1.0.1k-*.rpm
 ````
 Let’s make sure it works by listing supported TLS ciphers
 ````
 openssl ciphers -v 'TLSv1.2' | head -4
 ````
-````
 Without ECC your output will look like:
+````
 DHE-DSS-AES256-GCM-SHA384 TLSv1.2 Kx=DH Au=DSS Enc=AESGCM(256) Mac=AEAD
 DHE-RSA-AES256-GCM-SHA384 TLSv1.2 Kx=DH Au=RSA Enc=AESGCM(256) Mac=AEAD
 DHE-RSA-AES256-SHA256 TLSv1.2 Kx=DH Au=RSA Enc=AES(256) Mac=SHA256

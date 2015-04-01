@@ -22,8 +22,8 @@
 
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.0.1i
-Release: 3%{?dist}
+Version: 1.0.1k
+Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -59,11 +59,11 @@ Patch33: openssl-1.0.0-beta4-ca-dir.patch
 Patch34: openssl-0.9.6-x509.patch
 Patch35: openssl-0.9.8j-version-add-engines.patch
 Patch39: openssl-1.0.1h-ipv6-apps.patch
-Patch40: openssl-1.0.1g-fips.patch
+Patch40: openssl-1.0.1k-fips.patch
 Patch45: openssl-1.0.1e-env-zlib.patch
 Patch47: openssl-1.0.0-beta5-readme-warning.patch
 Patch49: openssl-1.0.1i-algo-doc.patch
-Patch50: openssl-1.0.1-beta2-dtls1-abi.patch
+Patch50: openssl-1.0.1k-dtls1-abi.patch
 Patch51: openssl-1.0.1e-version.patch
 Patch56: openssl-1.0.0c-rsa-x931.patch
 Patch58: openssl-1.0.1-beta2-fips-md5-allow.patch
@@ -73,10 +73,10 @@ Patch65: openssl-1.0.0e-chil-fixes.patch
 Patch66: openssl-1.0.1-pkgconfig-krb5.patch
 Patch68: openssl-1.0.1e-secure-getenv.patch
 Patch69: openssl-1.0.1c-dh-1024.patch
-Patch70: openssl-1.0.1e-fips-ec.patch
+Patch70: openssl-1.0.1j-fips-ec.patch
 Patch71: openssl-1.0.1i-manfix.patch
 Patch72: openssl-1.0.1e-fips-ctor.patch
-Patch73: openssl-1.0.1e-ecc-suiteb.patch
+Patch73: openssl-1.0.1k-ecc-suiteb.patch
 Patch74: openssl-1.0.1e-no-md5-verify.patch
 Patch75: openssl-1.0.1e-compat-symbols.patch
 Patch76: openssl-1.0.1i-new-fips-reqs.patch
@@ -85,12 +85,18 @@ Patch90: openssl-1.0.1e-enc-fail.patch
 Patch92: openssl-1.0.1h-system-cipherlist.patch
 Patch93: openssl-1.0.1h-disable-sslv2v3.patch
 # Backported fixes including security fixes
-Patch81: openssl-1.0.1-beta2-padlock64.patch
-Patch84: openssl-1.0.1i-trusted-first.patch
+Patch80: openssl-1.0.1j-evp-wrap.patch
+Patch81: openssl-1.0.1k-padlock64.patch
+Patch84: openssl-1.0.1k-trusted-first.patch
 Patch85: openssl-1.0.1e-arm-use-elf-auxv-caps.patch
-Patch89: openssl-1.0.1e-ephemeral-key-size.patch
-# Fix for EL < 7.
-# The release 300 is to avoid conflicting with future patches.
+Patch86: openssl-1.0.1k-ephemeral-key-size.patch
+Patch87: openssl-1.0.1e-cc-reqs.patch
+Patch101: openssl-1.0.1k-cve-2015-0209.patch
+Patch102: openssl-1.0.1e-cve-2015-0286.patch
+Patch103: openssl-1.0.1e-cve-2015-0287.patch
+Patch104: openssl-1.0.1e-cve-2015-0288.patch
+Patch105: openssl-1.0.1k-cve-2015-0289.patch
+Patch106: openssl-1.0.1e-cve-2015-0293.patch
 Patch300: openssl-1.0.1i-fix_secure_gentenv.patch
 
 License: OpenSSL
@@ -98,6 +104,9 @@ Group: System Environment/Libraries
 URL: http://www.openssl.org/
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: coreutils, krb5-devel, perl, sed, zlib-devel, /usr/bin/cmp
+%if 0%{?rhel} == 5
+BuildRequires: buildsys-macros
+%endif
 BuildRequires: /usr/bin/rename
 Requires: coreutils, make
 Requires: %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}
@@ -112,7 +121,6 @@ protocols.
 Summary: A general purpose cryptography library with TLS implementation
 Group: System Environment/Libraries
 Requires: ca-certificates >= 2008-5
-# This package does not exist on CentOS 6. Maybe on CentOS7.
 #Requires: crypto-policies
 # Needed obsoletes due to the base/lib subpackage split
 Obsoletes: openssl < 1:1.0.1-0.3.beta3
@@ -210,10 +218,18 @@ cp %{SOURCE12} %{SOURCE13} crypto/ec/
 %patch92 -p1 -b .system
 %patch93 -p1 -b .v2v3
 
+%patch80 -p1 -b .wrap
 %patch81 -p1 -b .padlock64
 %patch84 -p1 -b .trusted-first
 %patch85 -p1 -b .armcap
-%patch89 -p1 -b .ephemeral
+%patch86 -p1 -b .ephemeral
+%patch87 -p1 -b .cc-reqs
+%patch101 -p1 -b .use-after-free
+%patch102 -p1 -b .bool-cmp
+%patch103 -p1 -b .item-reuse
+%patch104 -p1 -b .req-null-deref
+%patch105 -p1 -b .pkcs7-null-deref
+%patch106 -p1 -b .ssl2-assert
 %patch300 -p1 -b .fix_secure_gentenv
 
 sed -i 's/SHLIB_VERSION_NUMBER "1.0.0"/SHLIB_VERSION_NUMBER "%{version}"/' crypto/opensslv.h
@@ -264,11 +280,15 @@ sslarch=linux-ppc64
 %ifarch ppc64le
 sslarch="linux-ppc64le"
 %endif
-## ISSUE 5 on github
 %ifarch x86_64 amd64
+# GCC on CentOS 5 or under can't handle nistp_64.
+%if 0%{?rhel} <= 5
+extra_flag=""
+%else
 extra_flag="enable-ec_nistp_64_gcc_128"
 %else
 extra_flag=""
+%endif
 %endif
 
 # ia64, x86_64, ppc are OK by default
@@ -279,7 +299,7 @@ extra_flag=""
 	--prefix=%{_prefix} --openssldir=%{_sysconfdir}/pki/tls ${sslflags} \
 	--system-ciphers-file=%{_sysconfdir}/crypto-policies/back-ends/openssl.config \
 	zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 \
- 	enable-cms enable-md2 no-mdc2 no-rc5 no-ec2m enable-ec enable-ecdh enable-ecdsa enable-srp ${extra_flag} \
+	enable-cms enable-md2 no-mdc2 no-rc5 no-ec2m enable-ec enable-ecdh enable-ecdsa enable-srp ${extra_flag} \
 	--with-krb5-flavor=MIT --enginesdir=%{_libdir}/openssl/engines \
 	--with-krb5-dir=/usr shared  ${sslarch} %{?!nofips:fips}
 
@@ -488,6 +508,50 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun libs -p /sbin/ldconfig
 
 %changelog
+* Thu Mar 19 2015 Tomáš Mráz <tmraz@redhat.com> 1.0.1k-6
+- fix CVE-2015-0209 - potential use after free in d2i_ECPrivateKey()
+- fix CVE-2015-0286 - improper handling of ASN.1 boolean comparison
+- fix CVE-2015-0287 - ASN.1 structure reuse decoding memory corruption
+- fix CVE-2015-0289 - NULL dereference decoding invalid PKCS#7 data
+- fix CVE-2015-0293 - triggerable assert in SSLv2 server
+
+* Mon Mar 16 2015 Tomáš Mráz <tmraz@redhat.com> 1.0.1k-5
+- fix bug in the CRYPTO_128_unwrap()
+
+* Fri Feb 27 2015 Tomáš Mráz <tmraz@redhat.com> 1.0.1k-4
+- fix bug in the RFC 5649 support (#1185878)
+
+* Sat Feb 21 2015 Till Maas <opensource@till.name> - 1:1.0.1k-3
+- Rebuilt for Fedora 23 Change
+  https://fedoraproject.org/wiki/Changes/Harden_all_packages_with_position-independent_code
+
+* Thu Jan 15 2015 Tomáš Mráz <tmraz@redhat.com> 1.0.1k-2
+- test in the non-FIPS RSA keygen for minimal distance of p and q
+  similarly to the FIPS RSA keygen
+
+* Fri Jan  9 2015 Tomáš Mráz <tmraz@redhat.com> 1.0.1k-1
+- new upstream release fixing multiple security issues
+
+* Thu Nov 20 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1j-3
+- disable SSLv3 by default again (mail servers and possibly
+  LDAP servers should probably allow it explicitly for legacy
+  clients)
+
+* Tue Oct 21 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1j-2
+- update the FIPS RSA keygen to be FIPS 186-4 compliant
+
+* Thu Oct 16 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1j-1
+- new upstream release fixing multiple security issues
+
+* Fri Oct 10 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1i-5
+- copy negotiated digests when switching certs by SNI (#1150032)
+
+* Mon Sep  8 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1i-4
+- add support for RFC 5649
+
+* Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:1.0.1i-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
 * Wed Aug 13 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1i-2
 - drop RSA X9.31 from RSA FIPS selftests
 - add Power 8 optimalizations
