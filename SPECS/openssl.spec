@@ -89,7 +89,14 @@ Patch80: openssl-1.0.1j-evp-wrap.patch
 Patch81: openssl-1.0.1k-padlock64.patch
 Patch84: openssl-1.0.1k-trusted-first.patch
 Patch85: openssl-1.0.1e-arm-use-elf-auxv-caps.patch
-Patch89: openssl-1.0.1k-ephemeral-key-size.patch
+Patch86: openssl-1.0.1k-ephemeral-key-size.patch
+Patch87: openssl-1.0.1e-cc-reqs.patch
+Patch101: openssl-1.0.1k-cve-2015-0209.patch
+Patch102: openssl-1.0.1e-cve-2015-0286.patch
+Patch103: openssl-1.0.1e-cve-2015-0287.patch
+Patch104: openssl-1.0.1e-cve-2015-0288.patch
+Patch105: openssl-1.0.1k-cve-2015-0289.patch
+Patch106: openssl-1.0.1e-cve-2015-0293.patch
 Patch300: openssl-1.0.1i-fix_secure_gentenv.patch
 
 License: OpenSSL
@@ -215,7 +222,14 @@ cp %{SOURCE12} %{SOURCE13} crypto/ec/
 %patch81 -p1 -b .padlock64
 %patch84 -p1 -b .trusted-first
 %patch85 -p1 -b .armcap
-%patch89 -p1 -b .ephemeral
+%patch86 -p1 -b .ephemeral
+%patch87 -p1 -b .cc-reqs
+%patch101 -p1 -b .use-after-free
+%patch102 -p1 -b .bool-cmp
+%patch103 -p1 -b .item-reuse
+%patch104 -p1 -b .req-null-deref
+%patch105 -p1 -b .pkcs7-null-deref
+%patch106 -p1 -b .ssl2-assert
 %patch300 -p1 -b .fix_secure_gentenv
 
 sed -i 's/SHLIB_VERSION_NUMBER "1.0.0"/SHLIB_VERSION_NUMBER "%{version}"/' crypto/opensslv.h
@@ -494,6 +508,35 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun libs -p /sbin/ldconfig
 
 %changelog
+* Thu Mar 19 2015 Tomáš Mráz <tmraz@redhat.com> 1.0.1k-6
+- fix CVE-2015-0209 - potential use after free in d2i_ECPrivateKey()
+- fix CVE-2015-0286 - improper handling of ASN.1 boolean comparison
+- fix CVE-2015-0287 - ASN.1 structure reuse decoding memory corruption
+- fix CVE-2015-0289 - NULL dereference decoding invalid PKCS#7 data
+- fix CVE-2015-0293 - triggerable assert in SSLv2 server
+
+* Mon Mar 16 2015 Tomáš Mráz <tmraz@redhat.com> 1.0.1k-5
+- fix bug in the CRYPTO_128_unwrap()
+
+* Fri Feb 27 2015 Tomáš Mráz <tmraz@redhat.com> 1.0.1k-4
+- fix bug in the RFC 5649 support (#1185878)
+
+* Sat Feb 21 2015 Till Maas <opensource@till.name> - 1:1.0.1k-3
+- Rebuilt for Fedora 23 Change
+  https://fedoraproject.org/wiki/Changes/Harden_all_packages_with_position-independent_code
+
+* Thu Jan 15 2015 Tomáš Mráz <tmraz@redhat.com> 1.0.1k-2
+- test in the non-FIPS RSA keygen for minimal distance of p and q
+  similarly to the FIPS RSA keygen
+
+* Fri Jan  9 2015 Tomáš Mráz <tmraz@redhat.com> 1.0.1k-1
+- new upstream release fixing multiple security issues
+
+* Thu Nov 20 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1j-3
+- disable SSLv3 by default again (mail servers and possibly
+  LDAP servers should probably allow it explicitly for legacy
+  clients)
+
 * Tue Oct 21 2014 Tomáš Mráz <tmraz@redhat.com> 1.0.1j-2
 - update the FIPS RSA keygen to be FIPS 186-4 compliant
 
